@@ -1,4 +1,4 @@
-package io.github.davidnicolini.teampilot.domain;
+package io.github.davidnicolini.teampilot.domain.model;
 
 /**
  * Papeis de acesso ao sistema.

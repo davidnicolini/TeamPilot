@@ -1,5 +1,4 @@
-package io.github.davidnicolini.teampilot.domain;
-
+package io.github.davidnicolini.teampilot.domain.model;
 
 import jakarta.persistence.*;
 import lombok.AllArgsConstructor;
@@ -9,30 +8,28 @@ import lombok.NoArgsConstructor;
 import lombok.Setter;
 
 @Entity
-@Table(name = "usuarios")
+@Table(name = "clientes")
 @Getter
 @Setter
 @NoArgsConstructor
 @AllArgsConstructor
 @Builder
-public class Usuario {
+public class Cliente {
 
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long id;
 
     @Column(nullable = false, unique = true)
-    private String login;
+    private String cnpjCpf;
 
     @Column(nullable = false)
-    private String senha;
+    private String razaoSocial;
 
-    @Enumerated(EnumType.STRING)
-    @Column(nullable = false)
-    private Role role;
+    private String telefone;
 
-    // Vinculo: um usuario com ROLE_RCA representa um RCA especifico.
-    @OneToOne
-    @JoinColumn(name = "rca_id")
+    // RCA responsavel pela carteira desse cliente.
+    @ManyToOne(fetch = FetchType.LAZY)
+    @JoinColumn(name = "rca_id", nullable = false)
     private Rca rca;
 }
