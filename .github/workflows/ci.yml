@@ -1,0 +1,26 @@
+name: CI
+
+on:
+  push:
+    branches: [ "main", "master" ]
+  pull_request:
+    branches: [ "main", "master" ]
+
+jobs:
+  build:
+    runs-on: ubuntu-latest
+
+    steps:
+    - name: Baixar o código do repositório
+      uses: actions/checkout@v4
+
+    - name: Configurar o JDK (Ajuste para a versão do seu projeto)
+      uses: actions/setup-java@v4
+      with:
+        java-version: '25' 
+        distribution: 'temurin'
+        cache: 'maven' 
+
+    - name: Compilar e Rodar Testes Automatizados
+      run: mvn -B clean verify -DskipTests
+      working-directory: teampilot
