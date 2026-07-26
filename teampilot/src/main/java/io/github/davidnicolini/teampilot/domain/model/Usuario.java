@@ -35,4 +35,9 @@ public class Usuario {
     @OneToOne
     @JoinColumn(name = "rca_id")
     private Rca rca;
+
+    public void setPassword(String newPassword) {
+        
+        throw new UnsupportedOperationException("Unimplemented method 'setPassword'");
+    }
 }

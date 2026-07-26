@@ -1,0 +1,28 @@
+spring:
+  application:
+    name: teampilot
+
+  
+  datasource:
+    url: jdbc:postgresql://localhost:5432/teampilot
+    username: teampilot
+    password: teampilot
+
+  jpa:
+    hibernate:
+      ddl-auto: update
+    show-sql: true
+    properties:
+      hibernate:
+        "[format_sql]": true
+
+  docker:
+    compose:
+      enabled: true
+      lifecycle-management: start-and-stop
+
+app:
+  jwt:
+    
+    secret: ${JWT_SECRET:troque-este-segredo-por-uma-chave-forte-de-pelo-menos-32-bytes}
+    expiration-ms: 86400000 

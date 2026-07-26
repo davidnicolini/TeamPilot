@@ -6,5 +6,8 @@
         "springframework",
         "teampilot",
         "webmvc"
-    ]
+    ],
+    "java.compile.nullAnalysis.mode": "automatic",
+    "java.configuration.updateBuildConfiguration": "interactive",
+    "editor.defaultFormatter": "redhat.vscode-yaml"
 }

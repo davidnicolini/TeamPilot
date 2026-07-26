@@ -1,0 +1,9 @@
+package io.github.davidnicolini.teampilot.domain.dto.request;
+
+import jakarta.validation.constraints.NotBlank;
+
+public record LoginRequest(
+        @NotBlank String login,
+        @NotBlank String senha
+) {
+}
