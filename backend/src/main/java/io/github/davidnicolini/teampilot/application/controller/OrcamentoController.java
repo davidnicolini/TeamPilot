@@ -5,6 +5,9 @@ import io.github.davidnicolini.teampilot.domain.model.MotivoPerda;
 import io.github.davidnicolini.teampilot.domain.dto.request.OrcamentoRequest;
 import io.github.davidnicolini.teampilot.domain.dto.response.OrcamentoResponse;
 import io.github.davidnicolini.teampilot.infrastructure.service.OrcamentoService;
+import io.github.davidnicolini.teampilot.infrastructure.service.PlanilhaImportService;
+import java.util.Map;
+import org.springframework.web.multipart.MultipartFile;
 import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.HttpStatus;
@@ -18,6 +21,7 @@ import java.util.List;
 public class OrcamentoController {
 
     private final OrcamentoService orcamentoService;
+    private final PlanilhaImportService planilhaImportService;
 
     @PostMapping
     @ResponseStatus(HttpStatus.CREATED)
@@ -47,4 +51,8 @@ public class OrcamentoController {
         return orcamentoService.marcarComoPerdido(id, motivo, concorrente);
     }
 }
-
+    @PostMapping("/importar")
+    public ResponseEntity> importarPlanilha(@RequestParam("file") MultipartFile file) throws Exception {
+        return ResponseEntity.ok(planilhaImportService.importar(file));
+    }
+}
