@@ -45,7 +45,7 @@ public class Orcamento {
     @Column(columnDefinition = "TEXT")
     private String observacao;
 
-    @Column(name = "modificado_manualmente", nullable = false)
+    @Column(name = "modificado_manualmente", nullable = false, columnDefinition = "boolean default false")
     @Builder.Default
     private boolean modificadoManualmente = false;
 
