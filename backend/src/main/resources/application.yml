@@ -2,11 +2,10 @@ spring:
   application:
     name: teampilot
 
-  
   datasource:
-    url: jdbc:postgresql://localhost:5432/teampilot
-    username: teampilot
-    password: teampilot
+    url: ${SPRING_DATASOURCE_URL:jdbc:postgresql://localhost:5432/teampilot}
+    username: ${SPRING_DATASOURCE_USERNAME:teampilot}
+    password: ${SPRING_DATASOURCE_PASSWORD:teampilot}
 
   jpa:
     hibernate:
@@ -18,11 +17,9 @@ spring:
 
   docker:
     compose:
-      enabled: true
-      lifecycle-management: start-and-stop
+      enabled: false
 
 app:
   jwt:
-    
     secret: ${JWT_SECRET:troque-este-segredo-por-uma-chave-forte-de-pelo-menos-32-bytes}
-    expiration-ms: 86400000 
+    expiration-ms: 86400000

@@ -37,7 +37,6 @@ public class Usuario {
     private Rca rca;
 
     public void setPassword(String newPassword) {
-        
-        throw new UnsupportedOperationException("Unimplemented method 'setPassword'");
+        this.senha = newPassword;
     }
 }

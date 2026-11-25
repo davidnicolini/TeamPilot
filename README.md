@@ -1,218 +1,113 @@
-# ✨ TeamPilot
+# TeamPilot
 
-**Manage teams. Track budgets. Deliver results.**
+Sistema web full-stack para gestão de orçamentos comerciais, acompanhamento de metas e análise de perdas para equipes de Representantes Comerciais Autônomos (RCAs).
 
-[![Build Status](https://img.shields.io/badge/Maven-CI-green/badge.svg)](https://github.com/davidnicolini/TeamPilot/actions)
-[![Java Version](https://img.shields.io/badge/Java-25-orange.svg)](https://www.oracle.com/java/)
-[![Spring Boot](https://img.shields.io/badge/Spring%20Boot-4.0.7-brightgreen.svg)](https://spring.io/projects/spring-boot)
-[![License](https://img.shields.io/badge/Apache_2.0-LICENSE-orange.svg)](https://github.com/davidnicolini/TeamPilot/blob/main/LICENSE)
-
-A modern, robust RESTful API built with **Java 25** and **Spring Boot 4** designed to centralize the management of quotes, sales targets, and client portfolios for teams of Independent Commercial Representatives (RCAs) — replacing fragmented, manual Excel spreadsheets with a reliable enterprise web platform.
-
+[![CI](https://github.com/davidnicolini/TeamPilot/actions/workflows/ci.yml/badge.svg)](https://github.com/davidnicolini/TeamPilot/actions)
+[![Java](https://img.shields.io/badge/Java-25-ED8B00?logo=openjdk&logoColor=white)](https://openjdk.org/)
+[![Spring Boot](https://img.shields.io/badge/Spring%20Boot-4.0-6DB33F?logo=springboot&logoColor=white)](https://spring.io/projects/spring-boot)
+[![Angular](https://img.shields.io/badge/Angular-19-DD0031?logo=angular&logoColor=white)](https://angular.dev/)
+[![License](https://img.shields.io/badge/License-Apache_2.0-blue.svg)](LICENSE)
 
 ---
 
-## 📋 Table of Contents
+## Contexto e Problema Resolvido
 
-- [Overview & Motivation](#-overview--motivation)
-- [Key Features & Business Rules](#-key-features--business-rules)
-- [Tech Stack](#-tech-stack)
-- [Prerequisites](#-prerequisites)
-- [Package Structure](#-package-structure)
-- [Running locally](#-running-locally)
-- [Running Tests](#-running-tests)
-- [API Documentation & Swagger](#-api-documentation--swagger)
-- [Continuous Integration (CI/CD)](#-continuous-integration-cicd)
-- [Roadmap](#-roadmap)
-- [Contributing](#-contributing)
-- [License](#-license)
-- [Author](#-author)
+Durante minha atuação na área comercial como orçamentista, identifiquei um gargalo operacional comum em equipes de vendas externas sem CRM: três supervisores mantinham planilhas paralelas em Excel com colunas e critérios diferentes para tentar responder às mesmas perguntas:
+
+- Qual o percentual real de atingimento da meta mensal por representante?
+- Por que estamos perdendo cotações (preço, prazo, ruptura de estoque)?
+- Para quais concorrentes específicos estamos perdendo vendas em cada região?
+
+O **TeamPilot** substitui esse controle fragmentado por uma aplicação centralizada com persistência relacional, regras de domínio encapsuladas e isolamento de acesso entre vendedores (`ROLE_RCA`) e supervisão (`ROLE_SUPERVISOR`).
 
 ---
 
-## 💡 Overview & Motivation
+## Arquitetura e Decisões Técnicas
 
-In early 2025, during a career transition, I worked as a sales estimator at Grupo Mundial in a department operating without CRM software — leaving sales reps with no structured way to track quotes or identify key opportunities. During that period, I observed three different managers independently building custom Excel spreadsheets to solve the exact same pain points: tracking budgets, analyzing lost sales reasons, and negotiating backed by real data.
+O repositório está estruturado como monorepo dividindo API e cliente web:
 
-I refined my own version of that spreadsheet and studied how other sales representatives organized their pipeline in the field.
+    TeamPilot/
+    ├── backend/                  # API RESTful em Java 25 + Spring Boot 4
+    │   └── src/main/java/io/github/davidnicolini/teampilot/
+    │       ├── application/      # Controllers REST e contratos HTTP
+    │       ├── domain/           # Entidades JPA, invariantes de negócio e DTOs (Records)
+    │       ├── infrastructure/   # Services, Repositories (JPQL) e Spring Security (JWT)
+    │       └── exception/        # Tratamento global de exceções (@RestControllerAdvice)
+    └── frontend/                 # Aplicação SPA em Angular + TypeScript
 
-**TeamPilot** is the next step in that evolution: transforming fragmented, manual tracking — which already covers loss reasons, direct competitors, active prospecting, and regional minimum freight rules — into a scalable, resilient web system featuring robust concurrency handling, relational database persistence, and fine-grained Role-Based Access Control (RBAC) between sales reps and supervisors.
+### Destaques de Implementação
 
----
-
-## ✨ Key Features & Business Rules
-
-### 🎯 Implemented Domain Rules
-- 🔄 **Quote Lifecycle Management:**
-  - State Machine: `IN_NEGOTIATION` → `WON` or `LOST`.
-  - Encapsulated Domain Validation: A quote can only transition to `LOST` if a specific reason (e.g., price, lead time, competition, out of stock, other) is provided — enforced directly within the `Orcamento` domain entity.
-- 🔍 **Competitor Loss Mapping:**
-  - When a loss is attributed to price or competition, the system records the exact competitor who won the deal (e.g., Condor, Objetiva, Opção Atacadista).
-- 📊 **Dynamic Sales Target Calculation:**
-  - Target achievement percentage is computed dynamically by summing all `WON` quotes for an RCA in a given reference month divided by their assigned target.
-- 🛡️ **Role-Based Access Control (RBAC):**
-  - `ROLE_RCA`: Isolated access restricted exclusively to their own quotes and clients.
-  - `ROLE_SUPERVISOR`: Unrestricted access to all team records, analytical endpoints, and performance reports.
-- 📈 **Analytical Reports:**
-  - Conversion rates (`WON` vs. `LOST`) per representative over custom timeframes.
-  - Average ticket size grouped by product line.
+- **Encapsulamento no Domínio:** A transição de estado de um orçamento (`EM_NEGOCIACAO` -> `FECHADO` ou `PERDIDO`) é protegida na própria entidade `Orcamento`. Não é possível marcar uma cotação como perdida sem informar o `MotivoPerda`, garantindo consistência independentemente da origem da chamada.
+- **Segurança em Duas Camadas (RBAC + Ownership):** Além da proteção de rotas via Spring Security com JWT *stateless*, a camada de serviço valida a propriedade do registro (`validarAcesso()`), impedindo que um `ROLE_RCA` consulte ou altere orçamentos de outro vendedor (retornando `HTTP 403`).
+- **Precisão Financeira:** Cálculos de meta mensal e faturamento utilizam `BigDecimal` com `RoundingMode.HALF_UP`, tratando cenários de meta nula ou zerada sem risco de `ArithmeticException`.
+- **Consultas Analíticas em JPQL:** Agregações de taxa de conversão por RCA e ticket médio por linha de produto executadas diretamente no banco via queries JPQL tipadas.
 
 ---
 
-## 🛠️ Tech Stack
+## Stack Tecnológica
 
-- **Language:** Java 25
-- **Core Framework:** Spring Boot 4.0.7
-  - Spring Web (RESTful APIs)
-  - Spring Data JPA (Hibernate ORM)
-  - Spring Security + Stateless JWT Authentication
-  - Spring Boot Docker Compose Integration
-- **Database:**
-  - PostgreSQL (managed via Docker Compose, auto-started by Spring Boot during development)
-  - H2 Database (In-memory database for isolated automated testing)
-- **API Documentation:** springdoc-openapi (Swagger UI at `/swagger-ui.html`)
-- **Productivity & Validation:** Lombok, Jakarta Bean Validation
-- **Testing:** JUnit 5, Mockito, AssertJ
-- **Build Tool:** Apache Maven
-- **CI/CD:** GitHub Actions
+**Backend**
+- Java 25, Spring Boot 4.0.7
+- Spring Security (JWT *stateless* + BCrypt)
+- Spring Data JPA / Hibernate
+- PostgreSQL 18 (Docker Compose) e H2 (testes automatizados)
+- SpringDoc OpenAPI (Swagger UI)
+- JUnit 5, Mockito e AssertJ
+
+**Frontend**
+- Angular (Standalone Components, Signals, Reactive Forms)
+- TypeScript, RxJS, HttpClient Interceptors (injeção automática de JWT)
 
 ---
 
-## 🔧 Prerequisites
+## Executando Localmente
 
-Ensure you have the following installed in your local environment before getting started:
+### Pré-requisitos
+- JDK 25
+- Docker & Docker Compose
+- Node.js 22+ e Angular CLI (para o frontend)
 
-  -  **JDK 25** installed and configured in your environment (JAVA_HOME).
+### 1. Subir o Backend e o Banco de Dados
 
-  - **Docker & Docker Compose** running (for automatic PostgreSQL container orchestration).
+O Spring Boot gerencia automaticamente o ciclo de vida do container PostgreSQL definido em `backend/compose.yaml`:
 
-  - **Git** for version control.
+    cd backend
+    ./mvnw spring-boot:run
 
----
+A API estará disponível em `http://localhost:8080` e a documentação interativa em `http://localhost:8080/swagger-ui.html`.
 
-## 📁 Package Structure
+#### Credenciais de Desenvolvimento (`DevDataSeeder`)
 
-The application follows a clean, domain-driven package organization ensuring high cohesion and loose coupling:
+| Perfil | Login | Senha | Escopo de Acesso |
+| :--- | :--- | :--- | :--- |
+| Supervisor | `supervisor` | `123456` | Visão global de orçamentos, RCAs e relatórios |
+| Vendedor (RCA) | `joao.rca` | `123456` | Apenas clientes e orçamentos da própria carteira |
 
-```text
-io.github.davidnicolini.teampilot
-├── domain.
-    ├── model   → Rca, Cliente, Orcamento, LinhaProduto, Usuario (JPA Entities)
-    └── dto.    → Data Transfer Objects isolating domain entities
-        ├── request   → Request Data Transfer Objects 
-        └── response  → Response Data Transfer Objects 
-├── infrastructure.
-    ├── repository    → Spring Data JPA Interfaces + Custom JPQL Report Queries
-    ├── service       → Core Business Logic (Target Calculations, Status Transitions, Access Control)
-    └── security      → JWT Utility, UserDetailsService, SecurityFilterChain Configuration
-├──application.
-    └── controller  → REST Controllers & API Endpoints
+### 2. Executar os Testes Automatizados
 
-└── exception   → Custom Domain Exceptions + Global Exception Handler (@ControllerAdvice)
-```
+    cd backend
+    ./mvnw test
 
----
+### 3. Subir o Frontend Angular
 
-## 📋 Running locally
+    cd frontend
+    npm install
+    ng serve
 
-Requirements: Java 25, Docker (for the local PostgreSQL container).
-
-1. Start the app:
-   ```bash
-   ./mvnw spring-boot:run
-   ```
-   Spring Boot automatically starts the PostgreSQL container defined in `compose.yaml`
-   (database `teampilot`, matching `application.yml`) — no manual setup needed.
-2. Optionally set `JWT_SECRET` as an environment variable (a dev default is used
-   otherwise).
-3. Swagger UI: http://localhost:8080/swagger-ui.html
-
-On first run, `DevDataSeeder` creates test users (local/dev only):
-
-| Login | Password | Role |
-|---|---|---|
-| `supervisor` | `123456` | `ROLE_SUPERVISOR` |
-| `joao.rca` | `123456` | `ROLE_RCA` |
-
-`POST /api/auth/login` returns a JWT — send it as `Authorization: Bearer <token>` on
-subsequent requests.
+Acesse `http://localhost:4200`.
 
 ---
 
-## 📖 API Documentation & Swagger
+## Próximas Evoluções
 
-Once the application is running, interact with the live API documentation via Swagger UI:
-
- -  Swagger UI: http://localhost:8080/swagger-ui.html
-
- -  OpenAPI Spec: http://localhost:8080/v3/api-docs
-
----
-
-## 🔄 Continuous Integration (CI/CD)
-
-The repository uses GitHub Actions for automated build and test pipelines. On every push or pull_request to main:
-
-  - The Java 25 JDK environment is set up.
-
-  - The project build is executed (mvn clean install).
-
-  - All automated unit and integration tests are verified.
+- [ ] **Prospecção Ativa:** Cadastro de leads por CNPJ com controle de última compra e carteira atribuída.
+- [ ] **Tabela de Equivalência de Marcas:** De-para entre marcas próprias e concorrentes para apoio durante a negociação.
+- [ ] **Regra de Frete Mínimo:** Validação automática de pedido mínimo por praça e dia de entrega.
+- [ ] **Importação de Planilhas Legadas:** Processamento em lote via Spring Batch + Apache POI.
 
 ---
 
-## 📋 Running tests
+## Autor
 
-```bash
-./mvnw test
-```
-
----
-
-## 📋 Roadmap
-
-Mapped from the spreadsheet controls I actually use in the field, not yet implemented:
-
-- **Active prospecting:** potential clients by CNPJ, last purchase date, assigned rep.
-- **Brand cross-reference:** equivalence table between own brand and competitors to handle
-  objections when a client asks for a specific brand.
-- **Minimum freight load rule:** minimum order value by region and delivery weekday.
-- **Legacy data import:** file upload endpoint with Spring Batch + Apache POI to
-  migrate the existing spreadsheets.
-- **BI integration:** analytics endpoints for Power BI or a custom dashboard.
-
----
-
-## 🤝 Contributing
-
-Contributions are welcome! If you'd like to report bugs, request features, or submit pull requests:
-
- 1  - Fork the repository.
-
- 2  - Create a feature Branch. ``` git checkout -b feature/AmazingFeature ```
-
- 3  - Commit your changes. ``` git commit -m 'feat: Add AmazingFeature' ```
-
- 4  - Push to the branch. ``` git push origin feature/AmazingFeature ```
-
- 5  - Open a Pull Request.
-
----
-
-## 📄 License
-
-This project is licensed under the Apache 2.0 - see the LICENSE file for details.
-
----
-
-## 🧑‍💻 Author
-
-Developed by David Nicolini
-
-Systems Analyst & Java Specialist
-
--   GitHub: [@davidnicolini](https://github.com/davidnicolini)
-    
--    LinkedIn: [David Nicolini](https://linkedin.com/in/davidnicolini)
-
----    
+**David Nicolini** — Desenvolvedor Backend Java & Arquitetura de Software  
+[Portfolio](https://davidnicolini.com.br) · [LinkedIn](https://www.linkedin.com/in/davidnicolini) · [GitHub](https://github.com/davidnicolini)

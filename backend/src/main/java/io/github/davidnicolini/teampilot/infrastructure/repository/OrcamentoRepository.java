@@ -47,11 +47,12 @@ public interface OrcamentoRepository extends JpaRepository<Orcamento, Long> {
     /**
      * Ticket medio dos orcamentos fechados por linha de produto.
      */
-    @Query("""
-            SELECT o.linhaProduto.nome, AVG(o.valorTotal)
+   @Query("""
+            SELECT o.linhaProduto.departamento, AVG(o.valorTotal)
             FROM Orcamento o
             WHERE o.status = io.github.davidnicolini.teampilot.domain.model.StatusOrcamento.FECHADO
-            GROUP BY o.linhaProduto.nome
+              AND o.linhaProduto IS NOT NULL
+            GROUP BY o.linhaProduto.departamento
             """)
     List<Object[]> ticketMedioPorLinhaProduto();
 }
