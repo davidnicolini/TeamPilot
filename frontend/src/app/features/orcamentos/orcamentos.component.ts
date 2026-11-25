@@ -373,9 +373,19 @@ interface RcaPerformance {
   styles: [`
     .layout { min-height: 100vh; background: #0f172a; color: #f8fafc; }
     .topbar {
-      display: flex; justify-content: space-between; align-items: center; flex-wrap: wrap; gap: 1rem;
-      padding: 1rem 2rem; background: #1e293b; border-bottom: 1px solid #334155;
-      .brand { display: flex; align-items: center; gap: 0.65rem; font-size: 1.2rem; color: #38bdf8; }
+      display: flex;
+      flex-wrap: wrap;
+      align-items: center;
+      justify-content: space-between;
+      gap: 0.75rem 1rem;
+      padding: 0.85rem 1.5rem;
+      background: rgba(15, 23, 42, 0.85);
+      backdrop-filter: blur(12px);
+      border-bottom: 1px solid rgba(148, 163, 184, 0.14);
+      position: sticky;
+      top: 0;
+      z-index: 20;
+    }
       .user-badge { font-size: 0.8rem; background: #0f172a; color: #cbd5e1; padding: 0.25rem 0.6rem; border-radius: 999px; }
       .role-badge { font-size: 0.75rem; background: rgba(56, 189, 248, 0.15); color: #7dd3fc; padding: 0.25rem 0.6rem; border-radius: 999px; }
     }
