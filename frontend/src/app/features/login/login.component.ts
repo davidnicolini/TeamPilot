@@ -33,7 +33,21 @@ import { AuthService } from '../../core/auth/auth.service';
 
             <div class="field">
               <label for="senha">Senha</label>
-              <input id="senha" type="password" formControlName="senha" placeholder="••••••" />
+              <div class="password-group">
+                <input
+                  id="senha"
+                  [type]="showLoginPassword() ? 'text' : 'password'"
+                  formControlName="senha"
+                  placeholder="••••••"
+                />
+                <button
+                  type="button"
+                  class="btn-toggle-pass"
+                  (click)="showLoginPassword.set(!showLoginPassword())"
+                >
+                  {{ showLoginPassword() ? 'Ocultar' : 'Mostrar' }}
+                </button>
+              </div>
             </div>
 
             @if (feedback()) {
@@ -73,7 +87,20 @@ import { AuthService } from '../../core/auth/auth.service';
 
             <div class="field">
               <label>Senha *</label>
-              <input type="password" formControlName="senha" placeholder="Mínimo 6 caracteres" />
+              <div class="password-group">
+                <input
+                  [type]="showRegisterPassword() ? 'text' : 'password'"
+                  formControlName="senha"
+                  placeholder="Mínimo 6 caracteres"
+                />
+                <button
+                  type="button"
+                  class="btn-toggle-pass"
+                  (click)="showRegisterPassword.set(!showRegisterPassword())"
+                >
+                  {{ showRegisterPassword() ? 'Ocultar' : 'Mostrar' }}
+                </button>
+              </div>
             </div>
 
             @if (registerForm.controls.role.value === 'ROLE_RCA') {
@@ -168,6 +195,23 @@ import { AuthService } from '../../core/auth/auth.service';
         font-size: 0.92rem;
       }
     }
+    .password-group {
+      display: flex;
+      gap: 0.4rem;
+      input { flex: 1; }
+    }
+    .btn-toggle-pass {
+      padding: 0 0.75rem;
+      border-radius: 8px;
+      border: 1px solid #334155;
+      background: #0f172a;
+      color: #38bdf8;
+      font-size: 0.8rem;
+      font-weight: 600;
+      cursor: pointer;
+      white-space: nowrap;
+      &:hover { border-color: #38bdf8; }
+    }
     .alert-error {
       background: rgba(239, 68, 68, 0.15);
       border: 1px solid #ef4444;
@@ -227,6 +271,8 @@ export class LoginComponent {
   readonly loading = signal(false);
   readonly feedback = signal<string | null>(null);
   readonly isError = signal(false);
+  readonly showLoginPassword = signal(false);
+  readonly showRegisterPassword = signal(false);
 
   readonly loginForm = this.fb.nonNullable.group({
     login: ['', Validators.required],
