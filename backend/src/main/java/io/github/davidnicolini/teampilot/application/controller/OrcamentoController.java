@@ -1,19 +1,19 @@
 package io.github.davidnicolini.teampilot.application.controller;
 
-
-import io.github.davidnicolini.teampilot.domain.model.MotivoPerda;
 import io.github.davidnicolini.teampilot.domain.dto.request.OrcamentoRequest;
 import io.github.davidnicolini.teampilot.domain.dto.response.OrcamentoResponse;
+import io.github.davidnicolini.teampilot.domain.model.MotivoPerda;
 import io.github.davidnicolini.teampilot.infrastructure.service.OrcamentoService;
 import io.github.davidnicolini.teampilot.infrastructure.service.PlanilhaImportService;
-import java.util.Map;
-import org.springframework.web.multipart.MultipartFile;
 import jakarta.validation.Valid;
+import java.util.List;
+import java.util.Map;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.HttpStatus;
+import org.springframework.http.ResponseEntity;
+import org.springframework.security.core.Authentication;
 import org.springframework.web.bind.annotation.*;
-
-import java.util.List;
+import org.springframework.web.multipart.MultipartFile;
 
 @RestController
 @RequestMapping("/api/orcamentos")
@@ -24,33 +24,29 @@ public class OrcamentoController {
     private final PlanilhaImportService planilhaImportService;
 
     @PostMapping
-    @ResponseStatus(HttpStatus.CREATED)
-    public OrcamentoResponse criar(@Valid @RequestBody OrcamentoRequest request) {
-        return orcamentoService.criar(request);
+    public ResponseEntity<OrcamentoResponse> create(@RequestBody @Valid OrcamentoRequest request) {
+        return ResponseEntity.status(HttpStatus.CREATED).body(orcamentoService.create(request));
     }
 
     @GetMapping
-    public List<OrcamentoResponse> listar() {
-        return orcamentoService.listar();
-    }
-
-    @GetMapping("/{id}")
-    public OrcamentoResponse buscarPorId(@PathVariable Long id) {
-        return orcamentoService.buscarPorId(id);
+    public ResponseEntity<List<OrcamentoResponse>> list(Authentication authentication) {
+        return ResponseEntity.ok(orcamentoService.listByAuthenticatedUser(authentication));
     }
 
     @PatchMapping("/{id}/fechar")
-    public OrcamentoResponse fechar(@PathVariable Long id) {
-        return orcamentoService.fechar(id);
+    public ResponseEntity<OrcamentoResponse> closeQuote(@PathVariable Long id) {
+        return ResponseEntity.ok(orcamentoService.closeQuote(id));
     }
 
     @PatchMapping("/{id}/perder")
-    public OrcamentoResponse marcarComoPerdido(@PathVariable Long id,
-                                                @RequestParam MotivoPerda motivo,
-                                                @RequestParam(required = false) String concorrente) {
-        return orcamentoService.marcarComoPerdido(id, motivo, concorrente);
+    public ResponseEntity<OrcamentoResponse> markAsLost(
+            @PathVariable Long id,
+            @RequestParam MotivoPerda motivo,
+            @RequestParam(required = false) String concorrente
+    ) {
+        return ResponseEntity.ok(orcamentoService.markAsLost(id, motivo, concorrente));
     }
-}
+
     @PostMapping("/importar")
     public ResponseEntity> importarPlanilha(@RequestParam("file") MultipartFile file) throws Exception {
         return ResponseEntity.ok(planilhaImportService.importar(file));
