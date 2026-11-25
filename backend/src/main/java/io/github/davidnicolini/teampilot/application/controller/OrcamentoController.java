@@ -1,18 +1,18 @@
 package io.github.davidnicolini.teampilot.application.controller;
 
-
 import io.github.davidnicolini.teampilot.domain.model.MotivoPerda;
 import io.github.davidnicolini.teampilot.domain.dto.request.OrcamentoRequest;
 import io.github.davidnicolini.teampilot.domain.dto.response.OrcamentoResponse;
 import io.github.davidnicolini.teampilot.infrastructure.service.OrcamentoService;
 import io.github.davidnicolini.teampilot.infrastructure.service.PlanilhaImportService;
-import org.springframework.web.multipart.MultipartFile;
 import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.HttpStatus;
 import org.springframework.web.bind.annotation.*;
+import org.springframework.web.multipart.MultipartFile;
 
 import java.util.List;
+import java.util.Map;
 
 @RestController
 @RequestMapping("/api/orcamentos")
@@ -50,8 +50,20 @@ public class OrcamentoController {
         return orcamentoService.marcarComoPerdido(id, motivo, concorrente);
     }
 
+    @PatchMapping("/{id}/observacao")
+    public OrcamentoResponse atualizarObservacao(@PathVariable Long id,
+                                                 @RequestBody Map<String, String> payload) {
+        return orcamentoService.atualizarObservacao(id, payload.get("observacao"));
+    }
+
     @PostMapping("/importar")
     public Object importarPlanilha(@RequestParam("file") MultipartFile file) throws Exception {
         return planilhaImportService.importar(file);
+    }
+
+    @DeleteMapping("/limpar")
+    public Object limparBase() {
+        long removidos = orcamentoService.limparBase();
+        return Map.of("mensagem", removidos + " orçamentos removidos da base.", "removidos", removidos);
     }
 }

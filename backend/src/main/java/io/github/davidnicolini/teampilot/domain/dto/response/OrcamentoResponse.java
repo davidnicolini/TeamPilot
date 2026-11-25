@@ -1,6 +1,5 @@
 package io.github.davidnicolini.teampilot.domain.dto.response;
 
-
 import io.github.davidnicolini.teampilot.domain.model.MotivoPerda;
 import io.github.davidnicolini.teampilot.domain.model.Orcamento;
 import io.github.davidnicolini.teampilot.domain.model.StatusOrcamento;
@@ -16,9 +15,12 @@ public record OrcamentoResponse(
         StatusOrcamento status,
         MotivoPerda motivoPerda,
         String concorrente,
+        String observacao,
         LocalDate dataOrcamento,
         boolean vendaCasada,
+        String rcaCodigo,
         String rcaNome,
+        BigDecimal rcaMetaMensal,
         String clienteRazaoSocial
 ) {
     public static OrcamentoResponse fromEntity(Orcamento o) {
@@ -30,11 +32,13 @@ public record OrcamentoResponse(
                 o.getStatus(),
                 o.getMotivoPerda(),
                 o.getConcorrente(),
+                o.getObservacao(),
                 o.getDataOrcamento(),
                 o.isVendaCasada(),
+                o.getRca().getCodigo(),
                 o.getRca().getNome(),
+                o.getRca().getMetaMensal(),
                 o.getCliente().getRazaoSocial()
         );
     }
 }
-

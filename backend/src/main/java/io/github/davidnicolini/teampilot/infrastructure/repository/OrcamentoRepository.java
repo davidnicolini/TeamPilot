@@ -1,8 +1,7 @@
 package io.github.davidnicolini.teampilot.infrastructure.repository;
 
-
 import io.github.davidnicolini.teampilot.domain.model.Orcamento;
-import io.github.davidnicolini.teampilot.domain.model.StatusOrcamento;
+import org.springframework.data.jpa.repository.EntityGraph;
 import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.data.jpa.repository.Query;
 import org.springframework.data.repository.query.Param;
@@ -10,15 +9,20 @@ import org.springframework.data.repository.query.Param;
 import java.math.BigDecimal;
 import java.time.LocalDate;
 import java.util.List;
+import java.util.Optional;
 
 public interface OrcamentoRepository extends JpaRepository<Orcamento, Long> {
 
+    @Override
+    @EntityGraph(attributePaths = {"rca", "cliente"})
+    List<Orcamento> findAll();
+
+    @EntityGraph(attributePaths = {"rca", "cliente"})
     List<Orcamento> findByRcaId(Long rcaId);
 
-    /**
-     * Soma o valor total de orcamentos FECHADOS de um RCA dentro de um periodo.
-     * Usada para calcular o percentual de meta atingida.
-     */
+    Optional<Orcamento> findFirstByNumeroPedidoAndClienteIdAndDataOrcamentoAndRcaId(
+            String numeroPedido, Long clienteId, LocalDate dataOrcamento, Long rcaId);
+
     @Query("""
             SELECT COALESCE(SUM(o.valorTotal), 0)
             FROM Orcamento o
@@ -30,10 +34,6 @@ public interface OrcamentoRepository extends JpaRepository<Orcamento, Long> {
                                              @Param("inicio") java.time.LocalDateTime inicio,
                                              @Param("fim") java.time.LocalDateTime fim);
 
-    /**
-     * Taxa de conversao (fechados vs. total decidido) por RCA em um periodo.
-     * Retorna [rcaNome, totalFechados, totalPerdidos].
-     */
     @Query("""
             SELECT o.rca.nome,
                    SUM(CASE WHEN o.status = io.github.davidnicolini.teampilot.domain.model.StatusOrcamento.FECHADO THEN 1 ELSE 0 END),
@@ -44,10 +44,7 @@ public interface OrcamentoRepository extends JpaRepository<Orcamento, Long> {
             """)
     List<Object[]> taxaConversaoPorRca(@Param("inicio") LocalDate inicio, @Param("fim") LocalDate fim);
 
-    /**
-     * Ticket medio dos orcamentos fechados por linha de produto.
-     */
-   @Query("""
+    @Query("""
             SELECT o.linhaProduto.departamento, AVG(o.valorTotal)
             FROM Orcamento o
             WHERE o.status = io.github.davidnicolini.teampilot.domain.model.StatusOrcamento.FECHADO
@@ -56,4 +53,3 @@ public interface OrcamentoRepository extends JpaRepository<Orcamento, Long> {
             """)
     List<Object[]> ticketMedioPorLinhaProduto();
 }
-

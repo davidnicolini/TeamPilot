@@ -12,6 +12,7 @@ import io.github.davidnicolini.teampilot.infrastructure.repository.UsuarioReposi
 import lombok.RequiredArgsConstructor;
 import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
 
 import java.util.List;
 
@@ -81,13 +82,29 @@ public class OrcamentoService {
         return OrcamentoResponse.fromEntity(orcamentoRepository.save(orcamento));
     }
 
-    // --- Controle de acesso: RCA so enxerga/edita os proprios orcamentos ---
+    public OrcamentoResponse atualizarObservacao(Long id, String observacao) {
+        Orcamento orcamento = buscarOrcamentoOuErro(id);
+        validarAcesso(orcamento);
+        orcamento.atualizarObservacao(observacao);
+        return OrcamentoResponse.fromEntity(orcamentoRepository.save(orcamento));
+    }
+
+    @Transactional
+    public long limparBase() {
+        Usuario usuarioLogado = usuarioLogado();
+        if (usuarioLogado.getRole() != Role.ROLE_SUPERVISOR) {
+            throw new AcessoNegadoException("Apenas supervisores podem limpar a base de orcamentos.");
+        }
+        long total = orcamentoRepository.count();
+        orcamentoRepository.deleteAllInBatch();
+        return total;
+    }
 
     private void validarAcesso(Orcamento orcamento) {
         Usuario usuarioLogado = usuarioLogado();
 
         if (usuarioLogado.getRole() == Role.ROLE_SUPERVISOR) {
-            return; // supervisor tem acesso irrestrito de leitura/gestao
+            return;
         }
 
         Rca rcaDoUsuario = rcaDoUsuarioOuErro(usuarioLogado);
@@ -114,4 +131,3 @@ public class OrcamentoService {
                 .orElseThrow(() -> new ResourceNotFoundException("Usuario logado nao encontrado: " + login));
     }
 }
-
