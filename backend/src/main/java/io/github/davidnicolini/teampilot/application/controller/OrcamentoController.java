@@ -7,7 +7,6 @@ import io.github.davidnicolini.teampilot.infrastructure.service.OrcamentoService
 import io.github.davidnicolini.teampilot.infrastructure.service.PlanilhaImportService;
 import jakarta.validation.Valid;
 import java.util.List;
-import java.util.Map;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
@@ -48,7 +47,7 @@ public class OrcamentoController {
     }
 
     @PostMapping("/importar")
-    public ResponseEntity> importarPlanilha(@RequestParam("file") MultipartFile file) throws Exception {
+    public ResponseEntity<?> importarPlanilha(@RequestParam("file") MultipartFile file) throws Exception {
         return ResponseEntity.ok(planilhaImportService.importar(file));
     }
 }
