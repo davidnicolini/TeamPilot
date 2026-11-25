@@ -379,27 +379,39 @@ interface RcaPerformance {
       justify-content: space-between;
       gap: 0.75rem 1rem;
       padding: 0.85rem 1.5rem;
-      background: rgba(15, 23, 42, 0.85);
+      background: rgba(15, 23, 42, 0.92);
       backdrop-filter: blur(12px);
       border-bottom: 1px solid rgba(148, 163, 184, 0.14);
       position: sticky;
       top: 0;
       z-index: 20;
     }
-      .user-badge { font-size: 0.8rem; background: #0f172a; color: #cbd5e1; padding: 0.25rem 0.6rem; border-radius: 999px; }
-      .role-badge { font-size: 0.75rem; background: rgba(56, 189, 248, 0.15); color: #7dd3fc; padding: 0.25rem 0.6rem; border-radius: 999px; }
+    .brand {
+      display: flex;
+      flex-wrap: wrap;
+      align-items: center;
+      gap: 0.6rem;
+      strong { font-size: 1.2rem; color: #38bdf8; }
     }
+    .user-badge { font-size: 0.8rem; background: #0f172a; color: #cbd5e1; padding: 0.25rem 0.6rem; border-radius: 999px; }
+    .role-badge { font-size: 0.75rem; background: rgba(56, 189, 248, 0.15); color: #7dd3fc; padding: 0.25rem 0.6rem; border-radius: 999px; }
     .nav-tabs {
-      display: flex; gap: 0.4rem; background: #0f172a; padding: 0.25rem; border-radius: 8px;
+      display: flex;
+      flex-wrap: wrap;
+      gap: 0.4rem;
+      background: #0f172a;
+      padding: 0.25rem;
+      border-radius: 8px;
       button {
         background: transparent; border: none; color: #94a3b8; padding: 0.45rem 0.9rem;
-        border-radius: 6px; font-weight: 600; cursor: pointer;
+        border-radius: 6px; font-weight: 600; cursor: pointer; white-space: nowrap;
         &.active { background: #0284c7; color: white; }
       }
     }
     .btn-logout {
       background: transparent; border: 1px solid #475569; color: #cbd5e1;
-      padding: 0.4rem 0.9rem; border-radius: 6px; cursor: pointer;
+      padding: 0.4rem 0.9rem; border-radius: 6px; cursor: pointer; white-space: nowrap;
+      &:hover { border-color: #94a3b8; color: #fff; }
     }
     .container { max-width: 1280px; margin: 0 auto; padding: 1.75rem 1rem; }
     .kpis {
@@ -427,7 +439,7 @@ interface RcaPerformance {
       .header-actions { display: flex; flex-wrap: wrap; gap: 0.5rem; }
       select {
         padding: 0.45rem 0.75rem; border-radius: 6px; border: 1px solid #334155;
-        background: #0f172a; color: #f8fafc;
+        background: #0f172a; color: #f8fafc; max-width: 100%;
       }
     }
     .btn-upload {
@@ -444,28 +456,54 @@ interface RcaPerformance {
       background: #0284c7; border: none; color: white; padding: 0.45rem 0.9rem; border-radius: 6px; cursor: pointer;
     }
     .excel-filters {
-      display: grid; grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
-      gap: 0.75rem; background: #0f172a; border: 1px solid #334155;
-      padding: 1rem; border-radius: 8px; margin-bottom: 1.25rem; align-items: end;
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(185px, 1fr));
+      gap: 0.85rem;
+      background: #0f172a;
+      border: 1px solid #334155;
+      padding: 1rem;
+      border-radius: 8px;
+      margin-bottom: 1.25rem;
+      align-items: end;
       .filter-item {
-        display: flex; flex-direction: column; gap: 0.3rem;
-        label { font-size: 0.75rem; color: #94a3b8; font-weight: 600; }
+        display: flex;
+        flex-direction: column;
+        gap: 0.35rem;
+        min-width: 0;
+        label { font-size: 0.75rem; color: #94a3b8; font-weight: 600; white-space: nowrap; }
         input, select {
-          padding: 0.5rem 0.65rem; border-radius: 6px; border: 1px solid #334155;
-          background: #1e293b; color: #f8fafc; font-size: 0.85rem;
+          width: 100%;
+          min-width: 0;
+          box-sizing: border-box;
+          padding: 0.5rem 0.65rem;
+          border-radius: 6px;
+          border: 1px solid #334155;
+          background: #1e293b;
+          color: #f8fafc;
+          font-size: 0.85rem;
         }
       }
       .sort-controls {
-        display: flex; gap: 0.35rem;
-        select { flex: 1; }
+        display: flex;
+        gap: 0.4rem;
+        min-width: 0;
+        select { flex: 1; min-width: 0; }
       }
       .btn-sort-dir {
         background: #1e293b; border: 1px solid #475569; color: #38bdf8;
-        padding: 0 0.65rem; border-radius: 6px; cursor: pointer; font-size: 0.8rem; white-space: nowrap;
+        padding: 0 0.65rem; border-radius: 6px; cursor: pointer; font-size: 0.8rem;
+        white-space: nowrap; flex-shrink: 0;
+      }
+      .filter-reset {
+        display: flex;
+        justify-content: flex-end;
       }
       .btn-clear-filters {
-        background: #334155; border: none; color: #cbd5e1; padding: 0.52rem 0.8rem;
-        border-radius: 6px; cursor: pointer; font-size: 0.82rem;
+        width: 100%;
+        background: #334155; border: 1px solid #475569; color: #e2e8f0;
+        padding: 0.52rem 0.8rem; border-radius: 6px; cursor: pointer;
+        font-size: 0.82rem; font-weight: 600; white-space: nowrap;
+        &:hover { background: #475569; }
       }
     }
     .table-responsive { overflow-x: auto; }
